@@ -36,6 +36,20 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Document Search API Server', 
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      search: '/api/search',
+      upload: '/api/upload',
+      documents: '/api/documents'
+    }
+  });
+});
+
 // Initialize database and start server
 async function startServer() {
   try {
