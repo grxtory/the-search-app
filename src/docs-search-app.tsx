@@ -841,7 +841,7 @@ export default function DocsSearchApp() {
     
     setIsSearching(true);
     try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(`http://localhost:3001/api/search?q=${encodeURIComponent(searchQuery)}`);
       if (!response.ok) {
         throw new Error('Search failed');
       }
@@ -869,7 +869,7 @@ export default function DocsSearchApp() {
     setSelectedTeam(team);
     setShowBrowse(true);
     try {
-      const response = await fetch(`/api/documents/browse/team/${team}`);
+      const response = await fetch(`http://localhost:3001/api/documents/browse/team/${team}`);
       if (!response.ok) {
         throw new Error('Failed to fetch team documents');
       }
