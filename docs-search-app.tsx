@@ -307,22 +307,28 @@ const CreateModal = ({
     createForm.confidentiality && createForm.audience;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center p-4">
-      <div className="bg-slate-800 rounded-2xl w-full max-w-5xl max-h-[90vh] border border-slate-700 flex flex-col">
-        <div className="p-6 border-b border-slate-700 flex-shrink-0">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 flex items-center justify-center p-4">
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl w-full max-w-5xl max-h-[90vh] border border-slate-600/50 shadow-2xl flex flex-col">
+        <div className="p-6 border-b border-slate-600/50 flex-shrink-0 bg-slate-800/50 rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-medium text-white">Create Document</h2>
-              {createForm.content && createForm.content.length > 50 && (
-                <span className="text-xs text-slate-500">Auto-save enabled</span>
-              )}
+              <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                <FileText className="w-4 h-4 text-blue-400" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-white">Create Document</h2>
+                {createForm.content && createForm.content.length > 50 && (
+                  <span className="text-xs text-green-400 flex items-center gap-1 mt-0.5">
+                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                    Auto-save enabled
+                  </span>
+                )}
+              </div>
             </div>
             <button
               onClick={() => {
-                console.log('Close button clicked');
                 if (createForm.content && createForm.content.length > 10) {
                   if (confirm('Discard unsaved changes?')) {
-                    console.log('Setting showCreate to false');
                     setShowCreate(false);
                     setCreateForm({
                       title: '',
@@ -337,29 +343,20 @@ const CreateModal = ({
                     });
                   }
                 } else {
-                  console.log('Setting showCreate to false (no content)');
                   setShowCreate(false);
                 }
               }}
-              className="text-slate-400 hover:text-white transition-colors"
+              className="w-10 h-10 rounded-xl bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-white transition-all duration-200 flex items-center justify-center group"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 group-hover:scale-110 transition-transform" />
             </button>
-            <button
-              onClick={() => {
-                console.log('Force close button clicked');
-                setShowCreate(false);
-              }}
-              className="ml-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
-            >
-              Force Close
-            </button>
+
           </div>
         </div>
         
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto bg-slate-800/30">
           <div className="p-6">
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-3 gap-8">
               <div className="col-span-2 space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-slate-400 mb-2">
@@ -370,9 +367,9 @@ const CreateModal = ({
                     value={createForm.title}
                     onChange={(e) => setCreateForm({...createForm, title: e.target.value})}
                     placeholder="Payments.Refunds - Runbook"
-                    className={`w-full px-4 py-3 bg-slate-700 border ${
-                      createErrors.title ? 'border-red-500' : 'border-slate-600'
-                    } rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-slate-500 transition-colors`}
+                    className={`w-full px-4 py-3 bg-slate-700/50 border ${
+                      createErrors.title ? 'border-red-400' : 'border-slate-600/50'
+                    } rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:bg-slate-700/70 transition-all duration-200`}
                   />
                   {createErrors.title && (
                     <p className="text-red-400 text-xs mt-1">{createErrors.title}</p>
@@ -383,33 +380,38 @@ const CreateModal = ({
                   <label className="block text-xs font-medium text-slate-400 mb-2">
                     Content * <span className="text-slate-600">(Rich editor: text, images, videos, links supported)</span>
                   </label>
-                  <div className={`bg-slate-700 border ${
-                    createErrors.content ? 'border-red-500' : 'border-slate-600'
-                  } rounded-xl p-1`}>
-                    <div className="flex items-center gap-2 p-2 border-b border-slate-600">
-                      <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">B</button>
-                      <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm italic">I</button>
-                      <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">Link</button>
-                      <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">Image</button>
-                      <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">Video</button>
-                      <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">Code</button>
+                                      <div className={`bg-slate-700/30 border ${
+                      createErrors.content ? 'border-red-400' : 'border-slate-600/50'
+                    } rounded-xl p-1 focus-within:border-blue-400 transition-all duration-200`}>
+                      <div className="flex items-center gap-2 p-3 border-b border-slate-600/50">
+                        <button className="px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-600/50 rounded-lg text-sm font-medium transition-all duration-200">B</button>
+                        <button className="px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-600/50 rounded-lg text-sm italic transition-all duration-200">I</button>
+                        <button className="px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-600/50 rounded-lg text-sm transition-all duration-200">Link</button>
+                        <button className="px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-600/50 rounded-lg text-sm transition-all duration-200">Image</button>
+                        <button className="px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-600/50 rounded-lg text-sm transition-all duration-200">Video</button>
+                        <button className="px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-600/50 rounded-lg text-sm transition-all duration-200">Code</button>
+                      </div>
+                      <textarea
+                        value={createForm.content}
+                        onChange={(e) => setCreateForm({...createForm, content: e.target.value})}
+                        placeholder="Start typing your document here... You can add text, embed images, videos, and links."
+                        className="w-full px-4 py-4 bg-transparent text-white placeholder-slate-400 focus:outline-none min-h-[400px] resize-none"
+                      />
                     </div>
-                    <textarea
-                      value={createForm.content}
-                      onChange={(e) => setCreateForm({...createForm, content: e.target.value})}
-                      placeholder="Start typing your document here... You can add text, embed images, videos, and links."
-                      className="w-full px-4 py-3 bg-transparent text-white placeholder-slate-500 focus:outline-none min-h-[400px] resize-none"
-                    />
-                  </div>
                   {createErrors.content && (
                     <p className="text-red-400 text-xs mt-1">{createErrors.content}</p>
                   )}
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="bg-slate-700/50 rounded-xl p-4 space-y-3">
-                  <h3 className="text-sm font-medium text-white mb-3">Document Metadata</h3>
+                              <div className="space-y-4">
+                  <div className="bg-slate-700/30 border border-slate-600/30 rounded-2xl p-5 space-y-4">
+                    <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
+                      <div className="w-6 h-6 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                        <Shield className="w-3 h-3 text-blue-400" />
+                      </div>
+                      Document Metadata
+                    </h3>
                   
                   <div>
                     <label className="block text-xs font-medium text-slate-400 mb-1">
@@ -418,9 +420,9 @@ const CreateModal = ({
                     <select
                       value={createForm.owningTeam}
                       onChange={(e) => setCreateForm({...createForm, owningTeam: e.target.value})}
-                      className={`w-full px-3 py-2 bg-slate-700 border ${
-                        createErrors.owningTeam ? 'border-red-500' : 'border-slate-600'
-                      } rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors`}
+                      className={`w-full px-3 py-2.5 bg-slate-700/50 border ${
+                        createErrors.owningTeam ? 'border-red-400' : 'border-slate-600/50'
+                      } rounded-lg text-white text-sm focus:outline-none focus:border-blue-400 focus:bg-slate-700/70 transition-all duration-200`}
                     >
                       <option value="">Select</option>
                       {TEAMS.map(team => (
@@ -454,7 +456,7 @@ const CreateModal = ({
                     <select
                       value={createForm.system}
                       onChange={(e) => setCreateForm({...createForm, system: e.target.value})}
-                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors"
+                      className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white text-sm focus:outline-none focus:border-blue-400 focus:bg-slate-700/70 transition-all duration-200"
                     >
                       <option value="">Select</option>
                       {CONTROLLED_TAGS.system.map(sys => (
@@ -506,7 +508,7 @@ const CreateModal = ({
                     <select
                       value={createForm.lifecycle}
                       onChange={(e) => setCreateForm({...createForm, lifecycle: e.target.value})}
-                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors"
+                      className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white text-sm focus:outline-none focus:border-blue-400 focus:bg-slate-700/70 transition-all duration-200"
                     >
                       {CONTROLLED_TAGS.lifecycle.map(lc => (
                         <option key={lc} value={lc}>{lc}</option>
@@ -523,7 +525,7 @@ const CreateModal = ({
                       value={createForm.tags}
                       onChange={(e) => setCreateForm({...createForm, tags: e.target.value})}
                       placeholder="critical, on-call"
-                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-slate-500 transition-colors"
+                      className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white text-sm placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:bg-slate-700/70 transition-all duration-200"
                     />
                   </div>
                 </div>
@@ -566,8 +568,8 @@ const CreateModal = ({
           </div>
         </div>
 
-        <div className="p-6 border-t border-slate-700 flex-shrink-0">
-          <div className="flex gap-3">
+                  <div className="p-6 border-t border-slate-600/50 flex-shrink-0 bg-slate-800/50 rounded-b-3xl">
+            <div className="flex gap-4">
             <button
               onClick={() => {
                 if (createForm.content && createForm.content.length > 10) {
@@ -589,7 +591,7 @@ const CreateModal = ({
                   setShowCreate(false);
                 }
               }}
-              className="px-4 py-3 border border-slate-600 hover:bg-slate-700 text-white font-medium rounded-xl transition-colors"
+              className="px-6 py-3 border border-slate-600/50 hover:border-slate-500 hover:bg-slate-700/50 text-white font-medium rounded-xl transition-all duration-200"
             >
               Cancel
             </button>
@@ -598,7 +600,7 @@ const CreateModal = ({
               <button
                 onClick={() => handleCreate(true)}
                 disabled={isSaving}
-                className="px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-xl transition-colors flex items-center gap-2"
+                className="px-6 py-3 bg-slate-700/70 hover:bg-slate-600/70 border border-slate-600/50 text-white font-medium rounded-xl transition-all duration-200 flex items-center gap-2"
               >
                 <Save className="w-4 h-4" />
                 Save as Draft
@@ -610,13 +612,13 @@ const CreateModal = ({
                 if (createForm.lifecycle === 'draft') {
                   setCreateForm({...createForm, lifecycle: 'in-review'});
                 }
-                setTimeout(() => handleCreate(false), 100);
+                handleCreate(false);
               }}
               disabled={!allRequiredFieldsFilled || isSaving}
-              className={`flex-1 px-4 py-3 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${
+              className={`flex-1 px-6 py-3 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 ${
                 allRequiredFieldsFilled && !isSaving
-                  ? 'bg-white hover:bg-slate-100 text-slate-900'
-                  : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl border border-blue-400/50'
+                  : 'bg-slate-700/50 text-slate-500 cursor-not-allowed border border-slate-600/50'
               }`}
             >
               {isSaving ? (
@@ -641,11 +643,9 @@ export default function DocsSearchApp() {
   const [showUpload, setShowUpload] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   
-  // Debug: Force showCreate to false on mount
+  // Focus management
   useEffect(() => {
-    console.log('Initial showCreate state:', showCreate);
     if (showCreate) {
-      console.log('Forcing showCreate to false');
       setShowCreate(false);
     }
   }, []);
