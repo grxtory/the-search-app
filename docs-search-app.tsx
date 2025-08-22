@@ -11,11 +11,644 @@ const CONTROLLED_TAGS = {
 
 const TEAMS = ['platform', 'payments', 'mobile', 'web', 'data', 'security'];
 
+// UploadModal component moved outside main component to prevent re-creation
+const UploadModal = ({ 
+  uploadForm, 
+  setUploadForm, 
+  uploadErrors, 
+  setShowUpload, 
+  handleUpload, 
+  isSaving 
+}) => {
+  const detectInputType = (input) => {
+    if (!input) return null;
+    const urlPattern = /^(https?:\/\/|www\.)/i;
+    return urlPattern.test(input) ? 'link' : 'file';
+  };
+
+  const inputType = detectInputType(uploadForm.input);
+  
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center p-4">
+      <div className="bg-slate-800 rounded-2xl w-full max-w-2xl border border-slate-700">
+        <div className="p-6 border-b border-slate-700">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-medium text-white">Add Document</h2>
+            <button
+              onClick={() => setShowUpload(false)}
+              className="text-slate-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-2">
+              Source *
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={uploadForm.input}
+                onChange={(e) => setUploadForm({...uploadForm, input: e.target.value})}
+                placeholder="Paste URL or drag file here"
+                className={`w-full px-4 py-3 bg-slate-700 border ${
+                  uploadErrors.input ? 'border-red-500' : 'border-slate-600'
+                } rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-slate-500 transition-colors`}
+              />
+              {inputType && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {inputType === 'link' ? (
+                    <Link className="w-4 h-4 text-blue-400" />
+                  ) : (
+                    <File className="w-4 h-4 text-green-400" />
+                  )}
+                </div>
+              )}
+            </div>
+            {uploadErrors.input && (
+              <p className="text-red-400 text-xs mt-1">{uploadErrors.input}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-2">
+              Title * <span className="text-slate-600">(System.Topic - Purpose)</span>
+            </label>
+            <input
+              type="text"
+              value={uploadForm.title}
+              onChange={(e) => setUploadForm({...uploadForm, title: e.target.value})}
+              placeholder="Payments.Refunds - Runbook"
+              className={`w-full px-4 py-3 bg-slate-700 border ${
+                uploadErrors.title ? 'border-red-500' : 'border-slate-600'
+              } rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-slate-500 transition-colors`}
+            />
+            {uploadErrors.title && (
+              <p className="text-red-400 text-xs mt-1">{uploadErrors.title}</p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-2">
+                Team *
+              </label>
+              <select
+                value={uploadForm.owningTeam}
+                onChange={(e) => setUploadForm({...uploadForm, owningTeam: e.target.value})}
+                className={`w-full px-4 py-3 bg-slate-700 border ${
+                  uploadErrors.owningTeam ? 'border-red-500' : 'border-slate-600'
+                } rounded-xl text-white focus:outline-none focus:border-slate-500 transition-colors`}
+              >
+                <option value="">Select</option>
+                {TEAMS.map(team => (
+                  <option key={team} value={team}>{team}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-2">
+                Type *
+              </label>
+              <select
+                value={uploadForm.docType}
+                onChange={(e) => setUploadForm({...uploadForm, docType: e.target.value})}
+                className={`w-full px-4 py-3 bg-slate-700 border ${
+                  uploadErrors.docType ? 'border-red-500' : 'border-slate-600'
+                } rounded-xl text-white focus:outline-none focus:border-slate-500 transition-colors`}
+              >
+                <option value="">Select</option>
+                {CONTROLLED_TAGS.docType.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-2">
+                System
+              </label>
+              <select
+                value={uploadForm.system}
+                onChange={(e) => setUploadForm({...uploadForm, system: e.target.value})}
+                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:border-slate-500 transition-colors"
+              >
+                <option value="">Select</option>
+                {CONTROLLED_TAGS.system.map(sys => (
+                  <option key={sys} value={sys}>{sys}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-2">
+                Access *
+              </label>
+              <select
+                value={uploadForm.confidentiality}
+                onChange={(e) => setUploadForm({...uploadForm, confidentiality: e.target.value})}
+                className={`w-full px-4 py-3 bg-slate-700 border ${
+                  uploadErrors.confidentiality ? 'border-red-500' : 'border-slate-600'
+                } rounded-xl text-white focus:outline-none focus:border-slate-500 transition-colors`}
+              >
+                <option value="">Select</option>
+                {CONTROLLED_TAGS.confidentiality.map(conf => (
+                  <option key={conf} value={conf}>{conf}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-2">
+                Audience *
+              </label>
+              <select
+                value={uploadForm.audience}
+                onChange={(e) => setUploadForm({...uploadForm, audience: e.target.value})}
+                className={`w-full px-4 py-3 bg-slate-700 border ${
+                  uploadErrors.audience ? 'border-red-500' : 'border-slate-600'
+                } rounded-xl text-white focus:outline-none focus:border-slate-500 transition-colors`}
+              >
+                <option value="">Select</option>
+                {CONTROLLED_TAGS.audience.map(aud => (
+                  <option key={aud} value={aud}>{aud}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-2">
+              Tags <span className="text-slate-600">(comma-separated)</span>
+            </label>
+            <input
+              type="text"
+              value={uploadForm.tags}
+              onChange={(e) => setUploadForm({...uploadForm, tags: e.target.value})}
+              placeholder="critical, on-call, migration"
+              className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-slate-500 transition-colors"
+            />
+          </div>
+
+          {['runbook', 'SOP'].includes(uploadForm.docType) && (
+            <div className="bg-orange-900/20 border border-orange-900/50 rounded-xl p-3">
+              <p className="text-sm text-orange-400">
+                90-day review cycle will be enforced automatically
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 border-t border-slate-700">
+          <button
+            onClick={handleUpload}
+            disabled={isSaving}
+            className="w-full px-4 py-3 bg-white hover:bg-slate-100 text-slate-900 font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSaving ? 'Adding...' : 'Add Document'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// CreateModal component moved outside main component to prevent re-creation
+const CreateModal = ({ 
+  createForm, 
+  setCreateForm, 
+  createErrors, 
+  setCreateErrors,
+  setShowCreate, 
+  isSaving,
+  searchQuery,
+  performSearch
+}) => {
+  const validateCreate = () => {
+    const errors = {};
+    const titlePattern = /^[A-Z][a-z]+\.[A-Z][a-z]+\s-\s.+$/;
+    
+    if (!createForm.title) errors.title = 'Required';
+    else if (!titlePattern.test(createForm.title)) {
+      errors.title = 'Format: System.Topic - Purpose';
+    }
+    if (!createForm.content || createForm.content.length < 10) {
+      errors.content = 'Document content is required (minimum 10 characters)';
+    }
+    if (!createForm.owningTeam) errors.owningTeam = 'Required';
+    if (!createForm.docType) errors.docType = 'Required';
+    if (!createForm.confidentiality) errors.confidentiality = 'Required';
+    if (!createForm.audience) errors.audience = 'Required';
+    
+    return errors;
+  };
+
+  const handleCreate = async (forceDraft = false) => {
+    const errors = validateCreate();
+    if (!forceDraft && Object.keys(errors).length > 0) return;
+    
+    try {
+      const response = await fetch('/api/upload/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: createForm.title || 'Untitled Document',
+          content: createForm.content,
+          owningTeam: createForm.owningTeam || 'unassigned',
+          docType: createForm.docType || 'draft',
+          system: createForm.system,
+          lifecycle: forceDraft ? 'draft' : createForm.lifecycle,
+          confidentiality: createForm.confidentiality || 'public-internal',
+          audience: createForm.audience || 'all-hands',
+          tags: createForm.tags
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Document creation failed');
+      }
+      
+      const result = await response.json();
+      
+      // Refresh search results if we're currently searching
+      if (searchQuery.trim()) {
+        performSearch();
+      }
+      
+      setShowCreate(false);
+      setCreateForm({
+        title: '',
+        content: '',
+        owningTeam: '',
+        docType: '',
+        confidentiality: '',
+        audience: '',
+        lifecycle: 'draft',
+        system: '',
+        tags: ''
+      });
+    } catch (error) {
+      console.error('Create error:', error);
+      alert(`Document creation failed: ${error.message}`);
+    }
+  };
+
+  const allRequiredFieldsFilled = createForm.title && createForm.content && 
+    createForm.owningTeam && createForm.docType && 
+    createForm.confidentiality && createForm.audience;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center p-4">
+      <div className="bg-slate-800 rounded-2xl w-full max-w-5xl max-h-[90vh] border border-slate-700 flex flex-col">
+        <div className="p-6 border-b border-slate-700 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg font-medium text-white">Create Document</h2>
+              {createForm.content && createForm.content.length > 50 && (
+                <span className="text-xs text-slate-500">Auto-save enabled</span>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                console.log('Close button clicked');
+                if (createForm.content && createForm.content.length > 10) {
+                  if (confirm('Discard unsaved changes?')) {
+                    console.log('Setting showCreate to false');
+                    setShowCreate(false);
+                    setCreateForm({
+                      title: '',
+                      content: '',
+                      owningTeam: '',
+                      docType: '',
+                      confidentiality: '',
+                      audience: '',
+                      lifecycle: 'draft',
+                      system: '',
+                      tags: ''
+                    });
+                  }
+                } else {
+                  console.log('Setting showCreate to false (no content)');
+                  setShowCreate(false);
+                }
+              }}
+              className="text-slate-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => {
+                console.log('Force close button clicked');
+                setShowCreate(false);
+              }}
+              className="ml-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
+            >
+              Force Close
+            </button>
+          </div>
+        </div>
+        
+        <div className="flex-1 overflow-auto">
+          <div className="p-6">
+            <div className="grid grid-cols-3 gap-6">
+              <div className="col-span-2 space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-2">
+                    Title * <span className="text-slate-600">(System.Topic - Purpose)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={createForm.title}
+                    onChange={(e) => setCreateForm({...createForm, title: e.target.value})}
+                    placeholder="Payments.Refunds - Runbook"
+                    className={`w-full px-4 py-3 bg-slate-700 border ${
+                      createErrors.title ? 'border-red-500' : 'border-slate-600'
+                    } rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-slate-500 transition-colors`}
+                  />
+                  {createErrors.title && (
+                    <p className="text-red-400 text-xs mt-1">{createErrors.title}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-2">
+                    Content * <span className="text-slate-600">(Rich editor: text, images, videos, links supported)</span>
+                  </label>
+                  <div className={`bg-slate-700 border ${
+                    createErrors.content ? 'border-red-500' : 'border-slate-600'
+                  } rounded-xl p-1`}>
+                    <div className="flex items-center gap-2 p-2 border-b border-slate-600">
+                      <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">B</button>
+                      <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm italic">I</button>
+                      <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">Link</button>
+                      <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">Image</button>
+                      <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">Video</button>
+                      <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">Code</button>
+                    </div>
+                    <textarea
+                      value={createForm.content}
+                      onChange={(e) => setCreateForm({...createForm, content: e.target.value})}
+                      placeholder="Start typing your document here... You can add text, embed images, videos, and links."
+                      className="w-full px-4 py-3 bg-transparent text-white placeholder-slate-500 focus:outline-none min-h-[400px] resize-none"
+                    />
+                  </div>
+                  {createErrors.content && (
+                    <p className="text-red-400 text-xs mt-1">{createErrors.content}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-slate-700/50 rounded-xl p-4 space-y-3">
+                  <h3 className="text-sm font-medium text-white mb-3">Document Metadata</h3>
+                  
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">
+                      Team *
+                    </label>
+                    <select
+                      value={createForm.owningTeam}
+                      onChange={(e) => setCreateForm({...createForm, owningTeam: e.target.value})}
+                      className={`w-full px-3 py-2 bg-slate-700 border ${
+                        createErrors.owningTeam ? 'border-red-500' : 'border-slate-600'
+                      } rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors`}
+                    >
+                      <option value="">Select</option>
+                      {TEAMS.map(team => (
+                        <option key={team} value={team}>{team}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">
+                      Type *
+                    </label>
+                    <select
+                      value={createForm.docType}
+                      onChange={(e) => setCreateForm({...createForm, docType: e.target.value})}
+                      className={`w-full px-3 py-2 bg-slate-700 border ${
+                        createErrors.docType ? 'border-red-500' : 'border-slate-600'
+                      } rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors`}
+                    >
+                      <option value="">Select</option>
+                      {CONTROLLED_TAGS.docType.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">
+                      System
+                    </label>
+                    <select
+                      value={createForm.system}
+                      onChange={(e) => setCreateForm({...createForm, system: e.target.value})}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors"
+                    >
+                      <option value="">Select</option>
+                      {CONTROLLED_TAGS.system.map(sys => (
+                        <option key={sys} value={sys}>{sys}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">
+                      Access *
+                    </label>
+                    <select
+                      value={createForm.confidentiality}
+                      onChange={(e) => setCreateForm({...createForm, confidentiality: e.target.value})}
+                      className={`w-full px-3 py-2 bg-slate-700 border ${
+                        createErrors.confidentiality ? 'border-red-500' : 'border-slate-600'
+                      } rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors`}
+                    >
+                      <option value="">Select</option>
+                      {CONTROLLED_TAGS.confidentiality.map(conf => (
+                        <option key={conf} value={conf}>{conf}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">
+                      Audience *
+                    </label>
+                    <select
+                      value={createForm.audience}
+                      onChange={(e) => setCreateForm({...createForm, audience: e.target.value})}
+                      className={`w-full px-3 py-2 bg-slate-700 border ${
+                        createErrors.audience ? 'border-red-500' : 'border-slate-600'
+                      } rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors`}
+                    >
+                      <option value="">Select</option>
+                      {CONTROLLED_TAGS.audience.map(aud => (
+                        <option key={aud} value={aud}>{aud}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">
+                      Lifecycle
+                    </label>
+                    <select
+                      value={createForm.lifecycle}
+                      onChange={(e) => setCreateForm({...createForm, lifecycle: e.target.value})}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors"
+                    >
+                      {CONTROLLED_TAGS.lifecycle.map(lc => (
+                        <option key={lc} value={lc}>{lc}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">
+                      Tags <span className="text-slate-600">(comma-separated)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={createForm.tags}
+                      onChange={(e) => setCreateForm({...createForm, tags: e.target.value})}
+                      placeholder="critical, on-call"
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-slate-500 transition-colors"
+                    />
+                  </div>
+                </div>
+
+                {['runbook', 'SOP'].includes(createForm.docType) && (
+                  <div className="bg-orange-900/20 border border-orange-900/50 rounded-xl p-3">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-orange-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-orange-400">
+                        90-day review cycle will be enforced
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {!allRequiredFieldsFilled && (
+                  <div className="bg-red-900/20 border border-red-900/50 rounded-xl p-3">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                      <div className="text-xs text-red-400">
+                        <p className="font-medium mb-1">Cannot publish yet</p>
+                        <p>Complete all required fields or save as draft</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {allRequiredFieldsFilled && (
+                  <div className="bg-green-900/20 border border-green-900/50 rounded-xl p-3">
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-green-400">
+                        Ready to publish
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 border-t border-slate-700 flex-shrink-0">
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                if (createForm.content && createForm.content.length > 10) {
+                  if (confirm('Discard unsaved changes?')) {
+                    setShowCreate(false);
+                    setCreateForm({
+                      title: '',
+                      content: '',
+                      owningTeam: '',
+                      docType: '',
+                      confidentiality: '',
+                      audience: '',
+                      lifecycle: 'draft',
+                      system: '',
+                      tags: ''
+                    });
+                  }
+                } else {
+                  setShowCreate(false);
+                }
+              }}
+              className="px-4 py-3 border border-slate-600 hover:bg-slate-700 text-white font-medium rounded-xl transition-colors"
+            >
+              Cancel
+            </button>
+            
+            {createForm.content && createForm.content.length > 10 && (
+              <button
+                onClick={() => handleCreate(true)}
+                disabled={isSaving}
+                className="px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-xl transition-colors flex items-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                Save as Draft
+              </button>
+            )}
+            
+            <button
+              onClick={() => {
+                if (createForm.lifecycle === 'draft') {
+                  setCreateForm({...createForm, lifecycle: 'in-review'});
+                }
+                setTimeout(() => handleCreate(false), 100);
+              }}
+              disabled={!allRequiredFieldsFilled || isSaving}
+              className={`flex-1 px-4 py-3 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${
+                allRequiredFieldsFilled && !isSaving
+                  ? 'bg-white hover:bg-slate-100 text-slate-900'
+                  : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+              }`}
+            >
+              {isSaving ? (
+                <>
+                  <Loader className="w-4 h-4 animate-spin" />
+                  Publishing...
+                </>
+              ) : (
+                'Publish Document'
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function DocsSearchApp() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showUpload, setShowUpload] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+  
+  // Debug: Force showCreate to false on mount
+  useEffect(() => {
+    console.log('Initial showCreate state:', showCreate);
+    if (showCreate) {
+      console.log('Forcing showCreate to false');
+      setShowCreate(false);
+    }
+  }, []);
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [viewerAction, setViewerAction] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
@@ -339,592 +972,11 @@ export default function DocsSearchApp() {
     </div>
   );
 
-  const UploadModal = () => {
-    const inputType = detectInputType(uploadForm.input);
-    
-    return (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center p-4">
-        <div className="bg-slate-800 rounded-2xl w-full max-w-2xl border border-slate-700">
-          <div className="p-6 border-b border-slate-700">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-white">Add Document</h2>
-              <button
-                onClick={() => setShowUpload(false)}
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-          
-          <div className="p-6 space-y-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-2">
-                Source *
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={uploadForm.input}
-                  onChange={(e) => setUploadForm({...uploadForm, input: e.target.value})}
-                  placeholder="Paste URL or drag file here"
-                  className={`w-full px-4 py-3 bg-slate-700 border ${
-                    uploadErrors.input ? 'border-red-500' : 'border-slate-600'
-                  } rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-slate-500 transition-colors`}
-                />
-                {inputType && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {inputType === 'link' ? (
-                      <Link className="w-4 h-4 text-blue-400" />
-                    ) : (
-                      <File className="w-4 h-4 text-green-400" />
-                    )}
-                  </div>
-                )}
-              </div>
-              {uploadErrors.input && (
-                <p className="text-red-400 text-xs mt-1">{uploadErrors.input}</p>
-              )}
-            </div>
 
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-2">
-                Title * <span className="text-slate-600">(System.Topic - Purpose)</span>
-              </label>
-              <input
-                type="text"
-                value={uploadForm.title}
-                onChange={(e) => setUploadForm({...uploadForm, title: e.target.value})}
-                placeholder="Payments.Refunds - Runbook"
-                className={`w-full px-4 py-3 bg-slate-700 border ${
-                  uploadErrors.title ? 'border-red-500' : 'border-slate-600'
-                } rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-slate-500 transition-colors`}
-              />
-              {uploadErrors.title && (
-                <p className="text-red-400 text-xs mt-1">{uploadErrors.title}</p>
-              )}
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-2">
-                  Team *
-                </label>
-                <select
-                  value={uploadForm.owningTeam}
-                  onChange={(e) => setUploadForm({...uploadForm, owningTeam: e.target.value})}
-                  className={`w-full px-4 py-3 bg-slate-700 border ${
-                    uploadErrors.owningTeam ? 'border-red-500' : 'border-slate-600'
-                  } rounded-xl text-white focus:outline-none focus:border-slate-500 transition-colors`}
-                >
-                  <option value="">Select</option>
-                  {TEAMS.map(team => (
-                    <option key={team} value={team}>{team}</option>
-                  ))}
-                </select>
-              </div>
 
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-2">
-                  Type *
-                </label>
-                <select
-                  value={uploadForm.docType}
-                  onChange={(e) => setUploadForm({...uploadForm, docType: e.target.value})}
-                  className={`w-full px-4 py-3 bg-slate-700 border ${
-                    uploadErrors.docType ? 'border-red-500' : 'border-slate-600'
-                  } rounded-xl text-white focus:outline-none focus:border-slate-500 transition-colors`}
-                >
-                  <option value="">Select</option>
-                  {CONTROLLED_TAGS.docType.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-2">
-                  System
-                </label>
-                <select
-                  value={uploadForm.system}
-                  onChange={(e) => setUploadForm({...uploadForm, system: e.target.value})}
-                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:border-slate-500 transition-colors"
-                >
-                  <option value="">Select</option>
-                  {CONTROLLED_TAGS.system.map(sys => (
-                    <option key={sys} value={sys}>{sys}</option>
-                  ))}
-                </select>
-              </div>
 
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-2">
-                  Access *
-                </label>
-                <select
-                  value={uploadForm.confidentiality}
-                  onChange={(e) => setUploadForm({...uploadForm, confidentiality: e.target.value})}
-                  className={`w-full px-4 py-3 bg-slate-700 border ${
-                    uploadErrors.confidentiality ? 'border-red-500' : 'border-slate-600'
-                  } rounded-xl text-white focus:outline-none focus:border-slate-500 transition-colors`}
-                >
-                  <option value="">Select</option>
-                  {CONTROLLED_TAGS.confidentiality.map(conf => (
-                    <option key={conf} value={conf}>{conf}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-2">
-                  Audience *
-                </label>
-                <select
-                  value={uploadForm.audience}
-                  onChange={(e) => setUploadForm({...uploadForm, audience: e.target.value})}
-                  className={`w-full px-4 py-3 bg-slate-700 border ${
-                    uploadErrors.audience ? 'border-red-500' : 'border-slate-600'
-                  } rounded-xl text-white focus:outline-none focus:border-slate-500 transition-colors`}
-                >
-                  <option value="">Select</option>
-                  {CONTROLLED_TAGS.audience.map(aud => (
-                    <option key={aud} value={aud}>{aud}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-2">
-                Tags <span className="text-slate-600">(comma-separated)</span>
-              </label>
-              <input
-                type="text"
-                value={uploadForm.tags}
-                onChange={(e) => setUploadForm({...uploadForm, tags: e.target.value})}
-                placeholder="critical, on-call, migration"
-                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-slate-500 transition-colors"
-              />
-            </div>
-
-            {['runbook', 'SOP'].includes(uploadForm.docType) && (
-              <div className="bg-orange-900/20 border border-orange-900/50 rounded-xl p-3">
-                <p className="text-sm text-orange-400">
-                  90-day review cycle will be enforced automatically
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div className="p-6 border-t border-slate-700">
-            <button
-              onClick={handleUpload}
-              className="w-full px-4 py-3 bg-white hover:bg-slate-100 text-slate-900 font-medium rounded-xl transition-colors"
-            >
-              Add Document
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const CreateModal = () => {
-    const validateCreate = () => {
-      const errors = {};
-      const titlePattern = /^[A-Z][a-z]+\.[A-Z][a-z]+\s-\s.+$/;
-      
-      if (!createForm.title) errors.title = 'Required';
-      else if (!titlePattern.test(createForm.title)) {
-        errors.title = 'Format: System.Topic - Purpose';
-      }
-      if (!createForm.content || createForm.content.length < 10) {
-        errors.content = 'Document content is required (minimum 10 characters)';
-      }
-      if (!createForm.owningTeam) errors.owningTeam = 'Required';
-      if (!createForm.docType) errors.docType = 'Required';
-      if (!createForm.confidentiality) errors.confidentiality = 'Required';
-      if (!createForm.audience) errors.audience = 'Required';
-      
-      setCreateErrors(errors);
-      return Object.keys(errors).length === 0;
-    };
-
-    const handleCreate = async (forceDraft = false) => {
-      if (!forceDraft && !validateCreate()) return;
-      
-      setIsSaving(true);
-      try {
-        const response = await fetch('/api/upload/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            title: createForm.title || 'Untitled Document',
-            content: createForm.content,
-            owningTeam: createForm.owningTeam || 'unassigned',
-            docType: createForm.docType || 'draft',
-            system: createForm.system,
-            lifecycle: forceDraft ? 'draft' : createForm.lifecycle,
-            confidentiality: createForm.confidentiality || 'public-internal',
-            audience: createForm.audience || 'all-hands',
-            tags: createForm.tags
-          })
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Document creation failed');
-        }
-        
-        const result = await response.json();
-        
-        // Refresh search results if we're currently searching
-        if (searchQuery.trim()) {
-          performSearch();
-        }
-        
-        setShowCreate(false);
-        setIsSaving(false);
-        setCreateForm({
-          title: '',
-          content: '',
-          owningTeam: '',
-          docType: '',
-          confidentiality: '',
-          audience: '',
-          lifecycle: 'draft',
-          system: '',
-          tags: ''
-        });
-      } catch (error) {
-        console.error('Create error:', error);
-        alert(`Document creation failed: ${error.message}`);
-        setIsSaving(false);
-      }
-    };
-
-    const allRequiredFieldsFilled = createForm.title && createForm.content && 
-      createForm.owningTeam && createForm.docType && 
-      createForm.confidentiality && createForm.audience;
-
-    return (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center p-4">
-        <div className="bg-slate-800 rounded-2xl w-full max-w-5xl max-h-[90vh] border border-slate-700 flex flex-col">
-          <div className="p-6 border-b border-slate-700 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <h2 className="text-lg font-medium text-white">Create Document</h2>
-                {createForm.content && createForm.content.length > 50 && (
-                  <span className="text-xs text-slate-500">Auto-save enabled</span>
-                )}
-              </div>
-              <button
-                onClick={() => {
-                  if (createForm.content && createForm.content.length > 10) {
-                    if (confirm('Discard unsaved changes?')) {
-                      setShowCreate(false);
-                      setCreateForm({
-                        title: '',
-                        content: '',
-                        owningTeam: '',
-                        docType: '',
-                        confidentiality: '',
-                        audience: '',
-                        lifecycle: 'draft',
-                        system: '',
-                        tags: ''
-                      });
-                    }
-                  } else {
-                    setShowCreate(false);
-                  }
-                }}
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-          
-          <div className="flex-1 overflow-auto">
-            <div className="p-6">
-              <div className="grid grid-cols-3 gap-6">
-                <div className="col-span-2 space-y-4">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-2">
-                      Title * <span className="text-slate-600">(System.Topic - Purpose)</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={createForm.title}
-                      onChange={(e) => setCreateForm({...createForm, title: e.target.value})}
-                      placeholder="Payments.Refunds - Runbook"
-                      className={`w-full px-4 py-3 bg-slate-700 border ${
-                        createErrors.title ? 'border-red-500' : 'border-slate-600'
-                      } rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-slate-500 transition-colors`}
-                    />
-                    {createErrors.title && (
-                      <p className="text-red-400 text-xs mt-1">{createErrors.title}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-2">
-                      Content * <span className="text-slate-600">(Rich editor: text, images, videos, links supported)</span>
-                    </label>
-                    <div className={`bg-slate-700 border ${
-                      createErrors.content ? 'border-red-500' : 'border-slate-600'
-                    } rounded-xl p-1`}>
-                      <div className="flex items-center gap-2 p-2 border-b border-slate-600">
-                        <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">B</button>
-                        <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm italic">I</button>
-                        <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">Link</button>
-                        <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">Image</button>
-                        <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">Video</button>
-                        <button className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-600 rounded text-sm">Code</button>
-                      </div>
-                      <textarea
-                        value={createForm.content}
-                        onChange={(e) => setCreateForm({...createForm, content: e.target.value})}
-                        placeholder="Start typing your document here... You can add text, embed images, videos, and links."
-                        className="w-full px-4 py-3 bg-transparent text-white placeholder-slate-500 focus:outline-none min-h-[400px] resize-none"
-                      />
-                    </div>
-                    {createErrors.content && (
-                      <p className="text-red-400 text-xs mt-1">{createErrors.content}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="bg-slate-700/50 rounded-xl p-4 space-y-3">
-                    <h3 className="text-sm font-medium text-white mb-3">Document Metadata</h3>
-                    
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
-                        Team *
-                      </label>
-                      <select
-                        value={createForm.owningTeam}
-                        onChange={(e) => setCreateForm({...createForm, owningTeam: e.target.value})}
-                        className={`w-full px-3 py-2 bg-slate-700 border ${
-                          createErrors.owningTeam ? 'border-red-500' : 'border-slate-600'
-                        } rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors`}
-                      >
-                        <option value="">Select</option>
-                        {TEAMS.map(team => (
-                          <option key={team} value={team}>{team}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
-                        Type *
-                      </label>
-                      <select
-                        value={createForm.docType}
-                        onChange={(e) => setCreateForm({...createForm, docType: e.target.value})}
-                        className={`w-full px-3 py-2 bg-slate-700 border ${
-                          createErrors.docType ? 'border-red-500' : 'border-slate-600'
-                        } rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors`}
-                      >
-                        <option value="">Select</option>
-                        {CONTROLLED_TAGS.docType.map(type => (
-                          <option key={type} value={type}>{type}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
-                        System
-                      </label>
-                      <select
-                        value={createForm.system}
-                        onChange={(e) => setCreateForm({...createForm, system: e.target.value})}
-                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors"
-                      >
-                        <option value="">Select</option>
-                        {CONTROLLED_TAGS.system.map(sys => (
-                          <option key={sys} value={sys}>{sys}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
-                        Access *
-                      </label>
-                      <select
-                        value={createForm.confidentiality}
-                        onChange={(e) => setCreateForm({...createForm, confidentiality: e.target.value})}
-                        className={`w-full px-3 py-2 bg-slate-700 border ${
-                          createErrors.confidentiality ? 'border-red-500' : 'border-slate-600'
-                        } rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors`}
-                      >
-                        <option value="">Select</option>
-                        {CONTROLLED_TAGS.confidentiality.map(conf => (
-                          <option key={conf} value={conf}>{conf}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
-                        Audience *
-                      </label>
-                      <select
-                        value={createForm.audience}
-                        onChange={(e) => setCreateForm({...createForm, audience: e.target.value})}
-                        className={`w-full px-3 py-2 bg-slate-700 border ${
-                          createErrors.audience ? 'border-red-500' : 'border-slate-600'
-                        } rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors`}
-                      >
-                        <option value="">Select</option>
-                        {CONTROLLED_TAGS.audience.map(aud => (
-                          <option key={aud} value={aud}>{aud}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
-                        Lifecycle
-                      </label>
-                      <select
-                        value={createForm.lifecycle}
-                        onChange={(e) => setCreateForm({...createForm, lifecycle: e.target.value})}
-                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-slate-500 transition-colors"
-                      >
-                        {CONTROLLED_TAGS.lifecycle.map(lc => (
-                          <option key={lc} value={lc}>{lc}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
-                        Tags <span className="text-slate-600">(comma-separated)</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={createForm.tags}
-                        onChange={(e) => setCreateForm({...createForm, tags: e.target.value})}
-                        placeholder="critical, on-call"
-                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-slate-500 transition-colors"
-                      />
-                    </div>
-                  </div>
-
-                  {['runbook', 'SOP'].includes(createForm.docType) && (
-                    <div className="bg-orange-900/20 border border-orange-900/50 rounded-xl p-3">
-                      <p className="text-xs text-orange-400">
-                        90-day review cycle will be enforced
-                      </p>
-                    </div>
-                  )}
-
-                  {!allRequiredFieldsFilled && (
-                    <div className="bg-red-900/20 border border-red-900/50 rounded-xl p-3">
-                      <div className="flex items-start gap-2">
-                        <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                        <div className="text-xs text-red-400">
-                          <p className="font-medium mb-1">Cannot publish yet</p>
-                          <p>Complete all required fields or save as draft</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {allRequiredFieldsFilled && (
-                    <div className="bg-green-900/20 border border-green-900/50 rounded-xl p-3">
-                      <div className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-green-400">
-                          Ready to publish
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 border-t border-slate-700 flex-shrink-0">
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  if (createForm.content && createForm.content.length > 10) {
-                    if (confirm('Discard unsaved changes?')) {
-                      setShowCreate(false);
-                      setCreateForm({
-                        title: '',
-                        content: '',
-                        owningTeam: '',
-                        docType: '',
-                        confidentiality: '',
-                        audience: '',
-                        lifecycle: 'draft',
-                        system: '',
-                        tags: ''
-                      });
-                    }
-                  } else {
-                    setShowCreate(false);
-                  }
-                }}
-                className="px-4 py-3 border border-slate-600 hover:bg-slate-700 text-white font-medium rounded-xl transition-colors"
-              >
-                Cancel
-              </button>
-              
-              {createForm.content && createForm.content.length > 10 && (
-                <button
-                  onClick={() => handleCreate(true)}
-                  disabled={isSaving}
-                  className="px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-xl transition-colors flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  Save as Draft
-                </button>
-              )}
-              
-              <button
-                onClick={() => {
-                  if (createForm.lifecycle === 'draft') {
-                    setCreateForm({...createForm, lifecycle: 'in-review'});
-                  }
-                  setTimeout(() => handleCreate(false), 100);
-                }}
-                disabled={!allRequiredFieldsFilled || isSaving}
-                className={`flex-1 px-4 py-3 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${
-                  allRequiredFieldsFilled && !isSaving
-                    ? 'bg-white hover:bg-slate-100 text-slate-900'
-                    : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                }`}
-              >
-                {isSaving ? (
-                  <>
-                    <Loader className="w-4 h-4 animate-spin" />
-                    Publishing...
-                  </>
-                ) : (
-                  'Publish Document'
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   const BrowseModal = () => {
     const teams = ['qa', 'dev', 'ba', 'sa', 'payments', 'platform'];
@@ -982,7 +1034,10 @@ export default function DocsSearchApp() {
                     {browseResults.map(doc => (
                       <div
                         key={doc.id}
-                        onClick={() => handleDocumentClick(doc)}
+                        onClick={() => {
+                          handleDocumentClick(doc);
+                          setShowBrowse(false);
+                        }}
                         className="group p-4 hover:bg-slate-700 rounded-xl cursor-pointer transition-colors"
                       >
                         <div className="flex items-start justify-between mb-2">
@@ -1101,7 +1156,12 @@ export default function DocsSearchApp() {
               {searchResults.map(doc => (
                 <div
                   key={doc.id}
-                  onClick={() => handleDocumentClick(doc)}
+                  onClick={() => {
+                    handleDocumentClick(doc);
+                    // Clear search to show document viewer cleanly
+                    setSearchQuery('');
+                    setSearchResults([]);
+                  }}
                   className="group p-4 hover:bg-slate-800 rounded-xl cursor-pointer transition-colors"
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -1176,8 +1236,24 @@ export default function DocsSearchApp() {
         </div>
       </div>
 
-      {showUpload && <UploadModal />}
-      {showCreate && <CreateModal />}
+      {showUpload && <UploadModal 
+        uploadForm={uploadForm}
+        setUploadForm={setUploadForm}
+        uploadErrors={uploadErrors}
+        setShowUpload={setShowUpload}
+        handleUpload={handleUpload}
+        isSaving={isSaving}
+      />}
+      {showCreate && <CreateModal 
+        createForm={createForm}
+        setCreateForm={setCreateForm}
+        createErrors={createErrors}
+        setCreateErrors={setCreateErrors}
+        setShowCreate={setShowCreate}
+        isSaving={isSaving}
+        searchQuery={searchQuery}
+        performSearch={performSearch}
+      />}
       {showBrowse && <BrowseModal />}
       {viewerAction && selectedDoc && <DocumentViewer />}
     </div>
