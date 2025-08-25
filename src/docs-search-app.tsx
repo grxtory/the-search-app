@@ -1,6 +1,48 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Link, File, X, ExternalLink, Eye, Shield, Users, Clock, ChevronRight, Loader, Upload, FileText, Save, AlertCircle, Check } from 'lucide-react';
 
+// TypeScript interfaces
+interface FormData {
+  title: string;
+  content: string;
+  input: string;
+  owningTeam: string;
+  docType: string;
+  confidentiality: string;
+  audience: string;
+  lifecycle: string;
+  system: string;
+  tags: string;
+}
+
+interface FormErrors {
+  title?: string;
+  content?: string;
+  input?: string;
+  owningTeam?: string;
+  docType?: string;
+  confidentiality?: string;
+  audience?: string;
+}
+
+interface Document {
+  id: string;
+  title: string;
+  extractedText: string;
+  content: string;
+  source: 'link' | 'created' | 'upload';
+  docType: string;
+  owningTeam: string;
+  confidentiality: string;
+  audience: string;
+  lifecycle?: string;
+  nextReview?: string;
+  owner?: string;
+  url?: string;
+}
+
+type ViewerAction = 'prompt' | 'inline' | null;
+
 const CONTROLLED_TAGS = {
   docType: ['spec', 'runbook', 'design', 'postmortem', 'SOP', 'decision', 'PRD', 'brief'],
   system: ['payments', 'auth', 'data-platform', 'mobile', 'web', 'infrastructure'],
@@ -21,6 +63,15 @@ const AddDocumentModal = ({
   isSaving,
   searchQuery,
   performSearch
+}: {
+  form: FormData;
+  setForm: (form: FormData) => void;
+  errors: FormErrors;
+  setErrors: (errors: FormErrors) => void;
+  setShowAdd: (show: boolean) => void;
+  isSaving: boolean;
+  searchQuery: string;
+  performSearch: () => void;
 }) => {
   const [inputMethod, setInputMethod] = useState('write'); // 'write', 'upload', 'url'
   
@@ -31,7 +82,7 @@ const AddDocumentModal = ({
   };
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: FormErrors = {};
     const titlePattern = /^[A-Z][a-z]+\.[A-Z][a-z]+\s-\s.+$/;
     
     if (!form.title) newErrors.title = 'Required';
@@ -67,7 +118,7 @@ const AddDocumentModal = ({
     
     try {
       let endpoint = '/api/upload/create';
-      let payload = {
+      let payload: any = {
         title: form.title || 'Untitled Document',
         owningTeam: form.owningTeam || 'unassigned',
         docType: form.docType || 'draft',
@@ -395,15 +446,23 @@ const BrowseModal = ({
   browseResults,
   setBrowseResults,
   handleDocumentClick
+}: {
+  showBrowse: boolean;
+  setShowBrowse: (show: boolean) => void;
+  selectedTeam: string;
+  setSelectedTeam: (team: string) => void;
+  browseResults: Document[];
+  setBrowseResults: (results: Document[]) => void;
+  handleDocumentClick: (doc: Document) => void;
 }) => {
-  const browseByTeam = async (team) => {
+  const browseByTeam = async (team: string): Promise<void> => {
     setSelectedTeam(team);
     try {
       const response = await fetch(`http://localhost:3001/api/documents?team=${encodeURIComponent(team)}`);
       if (!response.ok) {
         throw new Error('Browse failed');
       }
-      const data = await response.json();
+      const data: { documents: Document[] } = await response.json();
       setBrowseResults(data.documents || []);
     } catch (error) {
       console.error('Browse error:', error);
@@ -538,8 +597,14 @@ const DocumentViewer = ({
   setViewerAction,
   setSelectedDoc,
   onCancel
+}: {
+  selectedDoc: Document;
+  viewerAction: ViewerAction;
+  setViewerAction: (action: ViewerAction) => void;
+  setSelectedDoc: (doc: Document | null) => void;
+  onCancel?: () => void;
 }) => {
-  const handleDownload = () => {
+  const handleDownload = (): void => {
     if (selectedDoc.url) {
       window.open(selectedDoc.url, '_blank');
     } else {
@@ -555,7 +620,7 @@ const DocumentViewer = ({
     setSelectedDoc(null);
   };
 
-  const handleViewInline = () => {
+  const handleViewInline = (): void => {
     setViewerAction('inline');
   };
 
@@ -637,19 +702,19 @@ const DocumentViewer = ({
 };
 
 export default function DocsSearchApp() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [showAdd, setShowAdd] = useState(false);
-  const [selectedDoc, setSelectedDoc] = useState(null);
-  const [viewerAction, setViewerAction] = useState(null);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [showBrowse, setShowBrowse] = useState(false);
-  const [browseResults, setBrowseResults] = useState([]);
-  const [selectedTeam, setSelectedTeam] = useState('');
-  const searchInputRef = useRef(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<Document[]>([]);
+  const [showAdd, setShowAdd] = useState<boolean>(false);
+  const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
+  const [viewerAction, setViewerAction] = useState<ViewerAction>(null);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [showBrowse, setShowBrowse] = useState<boolean>(false);
+  const [browseResults, setBrowseResults] = useState<Document[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState<string>('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
   
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormData>({
     title: '',
     content: '',
     input: '',
@@ -662,9 +727,9 @@ export default function DocsSearchApp() {
     tags: ''
   });
   
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
-  const performSearch = async () => {
+  const performSearch = async (): Promise<void> => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
       return;
@@ -676,7 +741,7 @@ export default function DocsSearchApp() {
       if (!response.ok) {
         throw new Error('Search failed');
       }
-      const data = await response.json();
+      const data: { results: Document[] } = await response.json();
       setSearchResults(data.results || []);
     } catch (error) {
       console.error('Search error:', error);
@@ -696,12 +761,12 @@ export default function DocsSearchApp() {
     }
   }, [showAdd, showBrowse]);
 
-  const handleDocumentClick = (doc) => {
+  const handleDocumentClick = (doc: Document): void => {
     setSelectedDoc(doc);
     setViewerAction('prompt');
   };
 
-  const handleDocumentViewerCancel = () => {
+  const handleDocumentViewerCancel = (): void => {
     // If we're in browse mode, keep the browse modal open
     // If we're in search mode, just close the viewer
     if (showBrowse && selectedTeam && browseResults.length > 0) {
@@ -711,7 +776,9 @@ export default function DocsSearchApp() {
     // For search results, we can close everything
   };
 
-  const handleDownloadOrView = (action) => {
+  const handleDownloadOrView = (action: 'download' | 'view'): void => {
+    if (!selectedDoc) return;
+    
     if (action === 'download') {
       if (selectedDoc.url) {
         window.open(selectedDoc.url, '_blank');
